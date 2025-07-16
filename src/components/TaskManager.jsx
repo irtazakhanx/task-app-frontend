@@ -106,7 +106,7 @@ function TaskManager() {
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-slate-500 flex flex-col items-center justify-center py-8 px-2 relative">
       {/* Loader overlay */}
       {loading && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-990">
           <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
@@ -123,7 +123,7 @@ function TaskManager() {
           Logout
         </button>
       </div>
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-8 border border-indigo-100 mt-8">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl p-8 border border-indigo-100 mt-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-extrabold text-indigo-700 tracking-tight drop-shadow-sm">Task Manager</h1>
         </div>
