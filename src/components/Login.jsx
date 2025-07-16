@@ -23,8 +23,7 @@ function Login() {
       toast('Login Successfull');
       navigate('/app');
     } catch (error) {
-      const message = error?.response?.data?.message;
-      // toast.error(message)
+      const message = error?.response?.data?.error;
       setFieldError('general', message)
     } finally {
       setSubmitting(false)
