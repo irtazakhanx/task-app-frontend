@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const client = axios.create({
-  baseURL: 'http://localhost:9000',
+  baseURL: 'https://task-app-backend-2pzo.onrender.com',
 });
 
 client.interceptors.request.use(
