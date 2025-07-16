@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 
+
 const SignupSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
   password: Yup.string().min(6, 'Min 6 characters').required('Password is required'),
@@ -17,10 +18,10 @@ function Signup() {
   const handleRegister = async (values, { setSubmitting }) => {
     try {
       await SignupUser(values);
-      toast.success('Signup Successful');
+      toast.success('user created Successfully');
       navigate('/login');
     } catch (error) {
-      toast.error(error?.response?.data?.message || 'Signup Failed');
+      toast.error(error?.response?.data?.error || 'Signup Failed');
     } finally {
       setSubmitting(false);
     }

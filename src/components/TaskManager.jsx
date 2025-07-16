@@ -5,14 +5,10 @@ import TaskForm from './TaskForm'
 import TaskFilter from './TaskFilter'
 import { getUser } from '../api/Auth'
 import { createTask, getTasks, updateTask, deleteTask } from '../api/Tasks'
-
-// Dummy initial data for demonstration (will be replaced by API)
-// const initialTasks = [
-//   { id: 1, title: 'Buy groceries', description: 'Milk, Bread, Eggs', status: 'pending' },
-//   { id: 2, title: 'Finish project', description: 'Complete the MERN task manager', status: 'completed' },
-// ]
+import { toast } from 'react-toastify'
 
 function TaskManager() {
+  
   const [tasks, setTasks] = useState([])
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
@@ -20,43 +16,37 @@ function TaskManager() {
   const [editingTask, setEditingTask] = useState(null)
   const [username, setUsername] = useState('')
   const [userId, setUserId] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  // Fetch user info and tasks on mount
   useEffect(() => {
     async function fetchUserAndTasks() {
+      setLoading(true)
       try {
         const user = await getUser()
         setUsername(user.name || user.username || 'User')
         setUserId(user._id || user.id)
-        // Fetch tasks for this user
         const fetchedTasks = await getTasks()
         setTasks(fetchedTasks)
       } catch (err) {
-        // If unauthorized, force logout
         localStorage.removeItem('token')
         navigate('/login')
+      } finally {
+        setLoading(false)
       }
     }
     fetchUserAndTasks()
-    // eslint-disable-next-line
   }, [])
 
-  // Filter and search logic
-  const filteredTasks = tasks.filter(task => {
-    const matchesFilter = filter === 'all' ? true : task.status === filter
-    const matchesSearch = task.title.toLowerCase().includes(search.toLowerCase()) ||
-      (task.description && task.description.toLowerCase().includes(search.toLowerCase()))
-    return matchesFilter && matchesSearch
-  })
-
-  // Handlers
   const fetchAndSetTasks = async () => {
+    setLoading(true)
     try {
       const fetchedTasks = await getTasks()
       setTasks(fetchedTasks)
     } catch (err) {
-      // handle error
+      toast.error('Failed to fetch tasks')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -69,38 +59,57 @@ function TaskManager() {
     setModalOpen(true)
   }
   const handleDelete = async (task) => {
+    setLoading(true)
     try {
-      const res = await deleteTask(task.id || task._id, userId)
-      setTasks(res);
+      await deleteTask(task.id || task._id, userId)
+      await fetchAndSetTasks()
+      toast.success('Task deleted successfully')
     } catch (err) {
-      // handle error (show toast, etc)
+      toast.error(err?.response?.data?.error || 'Failed to delete task')
+    } finally {
+      setLoading(false)
     }
   }
+
   const handleToggle = async (task) => {
+    setLoading(true)
     try {
       await updateTask(task.id || task._id, { status: task.status === 'completed' ? 'pending' : 'completed', user: userId })
       await fetchAndSetTasks()
+      toast.success('Task status updated')
     } catch (err) {
-      // handle error
+      toast.error(err?.response?.data?.error || 'Failed to update task')
+    } finally {
+      setLoading(false)
     }
   }
+  
   const handleSubmit = async (task) => {
+    setLoading(true)
     try {
       if (task.id || task._id) {
-        // Edit
         await updateTask(task.id || task._id, { ...task, user: userId })
+        toast.success('Task updated successfully')
       } else {
-        // Create
         await createTask({ ...task, user: userId })
+        toast.success('Task created successfully')
       }
       await fetchAndSetTasks()
     } catch (err) {
-      // handle error
+      toast.error(err?.response?.data?.error || 'Failed to save task')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center py-8 px-2 relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-slate-500 flex flex-col items-center justify-center py-8 px-2 relative">
+      {/* Loader overlay */}
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
       {/* Top right user info and logout */}
       <div className="absolute top-4 right-4 flex items-center gap-3 z-10">
         <span className="font-semibold text-indigo-700 bg-white px-3 py-1 rounded shadow">{username}</span>
@@ -124,12 +133,16 @@ function TaskManager() {
         </div>
         <div className="mb-6">
           <TaskList
-            tasks={filteredTasks}
+            tasks={tasks.filter(task => {
+              const matchesFilter = filter === 'all' ? true : task.status === filter
+              const matchesSearch = task.title.toLowerCase().includes(search.toLowerCase()) ||
+                (task.description && task.description.toLowerCase().includes(search.toLowerCase()))
+              return matchesFilter && matchesSearch
+            })}
             filter={filter}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onToggle={handleToggle}
-            
           />
         </div>
         <TaskForm

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { LoginUser,getUser } from '../api/Auth'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
+import { toast } from 'react-toastify'
+
 
 const validationSchema = Yup.object({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -18,7 +20,8 @@ function Login() {
 
     try {
       await LoginUser(values)
-      navigate('/app')
+      toast('Login Successfull');
+      navigate('/app');
     } catch (error) {
       const message = error?.response?.data?.message;
       // toast.error(message)
